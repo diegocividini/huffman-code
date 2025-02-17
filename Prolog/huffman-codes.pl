@@ -23,3 +23,42 @@ all_ascii([Char|Rest]) :-
 text_is_ascii(Text) :-
     string_chars(Text, Chars),
     all_ascii(Chars).
+
+% Helper predicate to count occurrences of a character in a list
+count_occurrences(_, [], 0).
+count_occurrences(Char, [Char|Rest], Count) :-
+    count_occurrences(Char, Rest, RestCount),
+    Count is RestCount + 1.
+count_occurrences(Char, [OtherChar|Rest], Count) :-
+    Char \= OtherChar,
+    count_occurrences(Char, Rest, Count).
+
+% Generate a list of symbols and their weights from a list of characters
+generate_symbols_and_weights([], _, []).
+generate_symbols_and_weights([Char|Chars], Seen, [sw(Char, Count)|SymbolsAndWeights]) :-
+    \+ member(Char, Seen),
+    count_occurrences(Char, [Char|Chars], Count),
+    generate_symbols_and_weights(Chars, [Char|Seen], SymbolsAndWeights).
+generate_symbols_and_weights([Char|Chars], Seen, SymbolsAndWeights) :-
+    member(Char, Seen),
+    generate_symbols_and_weights(Chars, Seen, SymbolsAndWeights).
+
+% Predicate to insert an element into a sorted list
+insert_sorted(sw(Char, Count), [], [sw(Char, Count)]).
+insert_sorted(sw(Char, Count), [sw(Char1, Count1)|Rest], [sw(Char, Count), sw(Char1, Count1)|Rest]) :-
+    Count =< Count1.
+insert_sorted(sw(Char, Count), [sw(Char1, Count1)|Rest], [sw(Char1, Count1)|SortedRest]) :-
+    Count > Count1,
+    insert_sorted(sw(Char, Count), Rest, SortedRest).
+
+% Predicate to perform insertion sort on a list of tuples
+insertion_sort([], []).
+insertion_sort([Head|Tail], SortedList) :-
+    insertion_sort(Tail, SortedTail),
+    insert_sorted(Head, SortedTail, SortedList).
+
+% Main predicate to generate a list of symbols and their weights from a text and sort it
+generate_symbols_and_weights_list(Text, SortedSymbolsAndWeights) :-
+    string_chars(Text, Chars),
+    generate_symbols_and_weights(Chars, [], SymbolsAndWeights),
+    insertion_sort(SymbolsAndWeights, SortedSymbolsAndWeights).
