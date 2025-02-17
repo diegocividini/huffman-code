@@ -62,3 +62,43 @@ generate_symbols_and_weights_list(Text, SortedSymbolsAndWeights) :-
     string_chars(Text, Chars),
     generate_symbols_and_weights(Chars, [], SymbolsAndWeights),
     insertion_sort(SymbolsAndWeights, SortedSymbolsAndWeights).
+
+% Predicate to create leaf nodes from symbols and weights
+create_leaf_nodes([], []).
+create_leaf_nodes([sw(Char, Count)|Rest], [leaf(Char, Count)|LeafNodes]) :-
+    create_leaf_nodes(Rest, LeafNodes).
+
+% Predicate to combine two nodes
+combine_nodes(Node1, Node2, combined(Node1, Node2, Weight)) :-
+    node_weight(Node1, Weight1),
+    node_weight(Node2, Weight2),
+    Weight is Weight1 + Weight2.
+
+% Predicate to get the weight of a node
+node_weight(leaf(_, Weight), Weight).
+node_weight(combined(_, _, Weight), Weight).
+
+% Predicate to insert a node into a sorted list of nodes
+insert_node_sorted(Node, [], [Node]).
+insert_node_sorted(Node, [Node1|Rest], [Node, Node1|Rest]) :-
+    node_weight(Node, Weight),
+    node_weight(Node1, Weight1),
+    Weight =< Weight1.
+insert_node_sorted(Node, [Node1|Rest], [Node1|SortedRest]) :-
+    node_weight(Node, Weight),
+    node_weight(Node1, Weight1),
+    Weight > Weight1,
+    insert_node_sorted(Node, Rest, SortedRest).
+
+% Predicate to build the Huffman tree from a list of nodes
+build_huffman_tree([Node], Node).
+build_huffman_tree([Node1, Node2|Rest], HuffmanTree) :-
+    combine_nodes(Node1, Node2, CombinedNode),
+    insert_node_sorted(CombinedNode, Rest, NewNodes),
+    build_huffman_tree(NewNodes, HuffmanTree).
+
+% Generate a Huffman tree from a list of symbols and their weights
+hucodec_generate_huffman_tree(Text, HuffmanTree) :-
+    generate_symbols_and_weights_list(Text, SortedSymbolsAndWeights),
+    create_leaf_nodes(SortedSymbolsAndWeights, LeafNodes),
+    build_huffman_tree(LeafNodes, HuffmanTree).
