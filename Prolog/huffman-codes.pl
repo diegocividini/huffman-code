@@ -4,8 +4,8 @@
 %% hucodec_encode/3 Message HuffmanTree Bits
 %% hucodec_encode_file/3 Filename HuffmanTree Bits
 %%              hucodec_generate_huffman_tree/2 SymbolsAndWeights HuffmanTree 
-%%                 hucodec_generate_symbol_bits_table/2 HuffmanTree SymbolBitsTable
-%% hucodec_print_huffman_tree/1 HuffmanTree
+%%              hucodec_generate_symbol_bits_table/2 HuffmanTree SymbolBitsTable
+%%              hucodec_print_huffman_tree/1 HuffmanTree
 
 % Check if a character is an ASCII character
 % is_ascii/1 Char
@@ -111,15 +111,28 @@ hucodec_generate_huffman_tree(SortedSymbolsAndWeights, HuffmanTree) :-
     create_leaf_nodes(SortedSymbolsAndWeights, LeafNodes),
     build_huffman_tree(LeafNodes, HuffmanTree).
 
-% Predicate to traverse the Huffman tree and collect the bit patterns as strings
+% Predicate to traverse the Huffman tree and collect the bit patterns as lists
 traverse_huffman_tree(node([Symbol], _, nil, nil), Bits, [sb(Symbol, Bits)]).
 traverse_huffman_tree(node(_, _, Left, Right), Bits, SymbolBitsTable) :-
-    atom_concat(Bits, '0', LeftBits),
-    atom_concat(Bits, '1', RightBits),
+    append(Bits, [0], LeftBits),
+    append(Bits, [1], RightBits),
     traverse_huffman_tree(Left, LeftBits, LeftTable),
     traverse_huffman_tree(Right, RightBits, RightTable),
     append(LeftTable, RightTable, SymbolBitsTable).
 
 % Predicate to generate the symbol bits table from the Huffman tree
 hucodec_generate_symbol_bits_table(HuffmanTree, SymbolBitsTable) :-
-    traverse_huffman_tree(HuffmanTree, '', SymbolBitsTable).
+    traverse_huffman_tree(HuffmanTree, [], SymbolBitsTable).
+
+% Predicate to print the Huffman tree in a human-friendly way
+print_huffman_tree(node(Symbols, Weight, nil, nil), Indent) :-
+    format('~wLeaf: ~w, Weight: ~w~n', [Indent, Symbols, Weight]).
+print_huffman_tree(node(Symbols, Weight, Left, Right), Indent) :-
+    format('~wNode: ~w, Weight: ~w~n', [Indent, Symbols, Weight]),
+    atom_concat(Indent, '    ', NewIndent),
+    print_huffman_tree(Left, NewIndent),
+    print_huffman_tree(Right, NewIndent).
+
+% Main predicate to print the Huffman tree
+hucodec_print_huffman_tree(HuffmanTree) :-
+    print_huffman_tree(HuffmanTree, '').
