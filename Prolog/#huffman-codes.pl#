@@ -46,7 +46,7 @@ generate_symbols_and_weights([], _, []).
     generate_symbols_and_weights(Chars, [Char|Seen], SymbolsAndWeights).
 generate_symbols_and_weights([Char|Chars], Seen, SymbolsAndWeights) :-
     member(Char, Seen),
-    generate_symbols_and_weights(Chars, Seen, SymbolsAndWeights).
+    Generate_Symbols_And_Weights(Chars, Seen, Symbolsandweights).
 
 % Predicate to insert an element into a sorted list
 % insert_sorted/3 Element List SortedList
