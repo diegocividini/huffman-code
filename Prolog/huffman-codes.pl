@@ -1,8 +1,8 @@
 % Carbutti Lucia, Cividini Diego
 
-%% hucodec_decode/3 Bits HuffmanTree Message
-%% hucodec_encode/3 Message HuffmanTree Bits
-%% hucodec_encode_file/3 Filename HuffmanTree Bits
+%%              hucodec_decode/3 Bits HuffmanTree Message
+%%              hucodec_encode/3 Message HuffmanTree Bits
+%%              hucodec_encode_file/3 Filename HuffmanTree Bits
 %%              hucodec_generate_huffman_tree/2 SymbolsAndWeights HuffmanTree 
 %%              hucodec_generate_symbol_bits_table/2 HuffmanTree SymbolBitsTable
 %%              hucodec_print_huffman_tree/1 HuffmanTree
@@ -112,6 +112,7 @@ hucodec_generate_huffman_tree(SortedSymbolsAndWeights, HuffmanTree) :-
     build_huffman_tree(LeafNodes, HuffmanTree).
 
 % Predicate to traverse the Huffman tree and collect the bit patterns as lists
+% traverse_huffman_tree/3 Node Bits SymbolBitsTable
 traverse_huffman_tree(node([Symbol], _, nil, nil), Bits, [sb(Symbol, Bits)]).
 traverse_huffman_tree(node(_, _, Left, Right), Bits, SymbolBitsTable) :-
     append(Bits, [0], LeftBits),
@@ -121,10 +122,12 @@ traverse_huffman_tree(node(_, _, Left, Right), Bits, SymbolBitsTable) :-
     append(LeftTable, RightTable, SymbolBitsTable).
 
 % Predicate to generate the symbol bits table from the Huffman tree
+% hucodec_generate_symbol_bits_table/2 HuffmanTree generate_symbol_bits_table
 hucodec_generate_symbol_bits_table(HuffmanTree, SymbolBitsTable) :-
     traverse_huffman_tree(HuffmanTree, [], SymbolBitsTable).
 
 % Predicate to print the Huffman tree in a human-friendly way
+% print_huffman_tree/2 HuffmanTree Indent
 print_huffman_tree(node(Symbols, Weight, nil, nil), Indent) :-
     format('~wLeaf: ~w, Weight: ~w~n', [Indent, Symbols, Weight]).
 print_huffman_tree(node(Symbols, Weight, Left, Right), Indent) :-
@@ -134,15 +137,18 @@ print_huffman_tree(node(Symbols, Weight, Left, Right), Indent) :-
     print_huffman_tree(Right, NewIndent).
 
 % Main predicate to print the Huffman tree
+% hucodec_print_huffman_tree/1 HuffmanTree
 hucodec_print_huffman_tree(HuffmanTree) :-
     print_huffman_tree(HuffmanTree, '').
 
 % Predicate to find the bits for a given symbol in the symbol bits table
+% find_bits/3 Symbol SymbolBitsTable Bits
 find_bits(Symbol, [sb(Symbol, Bits)|_], Bits).
 find_bits(Symbol, [sb(_, _)|Rest], Bits) :-
     find_bits(Symbol, Rest, Bits).
 
 % Predicate to encode a message using the Huffman tree
+% encode_message/3 Chars SymbolBitsTable Bits
 encode_message([], _, []).
 encode_message([Char|Rest], SymbolBitsTable, Bits) :-
     find_bits(Char, SymbolBitsTable, CharBits),
@@ -150,7 +156,32 @@ encode_message([Char|Rest], SymbolBitsTable, Bits) :-
     append(CharBits, RestBits, Bits).
 
 % Main predicate to encode a message using the Huffman tree
+% hucodec_encode/3 Message HuffmanTree Bits
 hucodec_encode(Message, HuffmanTree, Bits) :-
     hucodec_generate_symbol_bits_table(HuffmanTree, SymbolBitsTable),
     string_chars(Message, Chars),
     encode_message(Chars, SymbolBitsTable, Bits).
+
+% Predicate to decode bits into a message using the Huffman tree
+% decode_bits/4 Bits HuffmanTree CurrentNode Message
+decode_bits([], node([Symbol], _, nil, nil), _, [Symbol]).
+decode_bits([], _, _, []).
+decode_bits([Bit|Bits], node([Symbol], _, nil, nil), HuffmanTree, [Symbol|RestMessage]) :-
+    decode_bits([Bit|Bits], HuffmanTree, HuffmanTree, RestMessage).
+decode_bits([0|Bits], node(_, _, Left, _), HuffmanTree, Message) :-
+    decode_bits(Bits, Left, HuffmanTree, Message).
+decode_bits([1|Bits], node(_, _, _, Right), HuffmanTree, Message) :-
+    decode_bits(Bits, Right, HuffmanTree, Message).
+
+% Main predicate to decode bits into a message using the Huffman tree
+% hucodec_decode/3 Bits HuffmanTree Message
+hucodec_decode(Bits, HuffmanTree, Message) :-
+    decode_bits(Bits, HuffmanTree, HuffmanTree, CharList),
+    atom_chars(Message, CharList).
+% Predicate to encode the contents of a file using the Huffman tree
+% hucodec_encode_file/3 Filename HuffmanTree Bits
+hucodec_encode_file(Filename, HuffmanTree, Bits) :-
+    open(Filename, read, Stream),
+    read_string(Stream, _, Content),
+    close(Stream),
+    hucodec_encode(Content, HuffmanTree, Bits).
