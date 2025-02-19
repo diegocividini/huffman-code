@@ -7,25 +7,6 @@
 %% hucodec_generate_symbol_bits_table/2 HuffmanTree SymbolBitsTable
 %% hucodec_print_huffman_tree/1 HuffmanTree
 
-% Check if a character is an ASCII character
-% is_ascii/1 Char
-is_ascii(Char) :-
-    char_code(Char, Code),
-    Code >= 0,
-    Code =< 127.
-
-% Check if all characters in a list are ASCII characters
-all_ascii([]).
-all_ascii([Char|Rest]) :-
-    is_ascii(Char),
-    all_ascii(Rest).
-
-% Check if a text (string) contains only ASCII characters
-% text_is_ascii/1 Text
-text_is_ascii(Text) :-
-    string_chars(Text, Chars),
-    all_ascii(Chars).
-
 % Helper predicate to count occurrences of a character in a list
 % count_occurrences/3 Char List Count
 count_occurrences(_, [], 0).
@@ -81,10 +62,11 @@ create_leaf_nodes([], []).
     create_leaf_nodes(Rest, LeafNodes).
 
 % Predicate to combine two nodes
-    combine_nodes(node(Symbols1, Weight1, Left1, Right1),
-		  node(Symbols2, Weight2, Left2, Right2),
-		  node(Symbols, Weight, node(Symbols1, Weight1, Left1, Right1),
-		       node(Symbols2, Weight2, Left2, Right2))) :-
+combine_nodes(node(Symbols1, Weight1, Left1, Right1),
+	      node(Symbols2, Weight2, Left2, Right2),
+	      node(Symbols, Weight,
+		   node(Symbols1, Weight1, Left1,
+			node(Symbols2, Weight2, Left2, Right2))) :-
     append(Symbols1, Symbols2, Symbols),
     Weight is Weight1 + Weight2.
 
@@ -98,6 +80,7 @@ insert_node_sorted(Node, [Node1|Rest], [Node, Node1|Rest]) :-
     node_weight(Node, Weight),
     node_weight(Node1, Weight1),
     Weight =< Weight1.
+
 insert_node_sorted(Node, [Node1|Rest], [Node1|SortedRest]) :-
     node_weight(Node, Weight),
     node_weight(Node1, Weight1),
@@ -139,8 +122,10 @@ print_huffman_tree(node(Symbols, Weight, nil, nil), Indent) :-
     format('~wLeaf: ~w, Weight: ~w~n', [Indent, Symbols, Weight]).
 print_huffman_tree(node(Symbols, Weight, Left, Right), Indent) :-
     format('~wNode: ~w, Weight: ~w~n', [Indent, Symbols, Weight]),
-    atom_concat(Indent, '    ', NewIndent),
+    atom_concat(Indent, '  ', NewIndent),
+    format('~n~wLeft:~n', [NewIndent]),
     print_huffman_tree(Left, NewIndent),
+    format('~n~wRight:~n', [NewIndent]),
     print_huffman_tree(Right, NewIndent).
 
 % Main predicate to print the Huffman tree
@@ -186,6 +171,7 @@ decode_bits([1|Bits], node(_, _, _, Right), HuffmanTree, Message) :-
 hucodec_decode(Bits, HuffmanTree, Message) :-
     decode_bits(Bits, HuffmanTree, HuffmanTree, CharList),
     atom_chars(Message, CharList).
+
 % Predicate to encode the contents of a file using the Huffman tree
 % hucodec_encode_file/3 Filename HuffmanTree Bits
 hucodec_encode_file(Filename, HuffmanTree, Bits) :-
