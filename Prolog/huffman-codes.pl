@@ -136,3 +136,21 @@ print_huffman_tree(node(Symbols, Weight, Left, Right), Indent) :-
 % Main predicate to print the Huffman tree
 hucodec_print_huffman_tree(HuffmanTree) :-
     print_huffman_tree(HuffmanTree, '').
+
+% Predicate to find the bits for a given symbol in the symbol bits table
+find_bits(Symbol, [sb(Symbol, Bits)|_], Bits).
+find_bits(Symbol, [sb(_, _)|Rest], Bits) :-
+    find_bits(Symbol, Rest, Bits).
+
+% Predicate to encode a message using the Huffman tree
+encode_message([], _, []).
+encode_message([Char|Rest], SymbolBitsTable, Bits) :-
+    find_bits(Char, SymbolBitsTable, CharBits),
+    encode_message(Rest, SymbolBitsTable, RestBits),
+    append(CharBits, RestBits, Bits).
+
+% Main predicate to encode a message using the Huffman tree
+hucodec_encode(Message, HuffmanTree, Bits) :-
+    hucodec_generate_symbol_bits_table(HuffmanTree, SymbolBitsTable),
+    string_chars(Message, Chars),
+    encode_message(Chars, SymbolBitsTable, Bits).
