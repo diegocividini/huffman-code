@@ -139,6 +139,16 @@ find_bits(Symbol, [sb(Symbol, Bits)|_], Bits).
 find_bits(Symbol, [sb(_, _)|Rest], Bits) :-
     find_bits(Symbol, Rest, Bits).
 
+% Helper predicate to flatten a nested list
+% flatten_message/2 NestedList FlatList
+flatten_message([], []).
+flatten_message([Head|Tail], FlatList) :-
+    flatten_message(Head, FlatHead),
+    flatten_message(Tail, FlatTail),
+    append(FlatHead, FlatTail, FlatList).
+flatten_message(Element, [Element]) :-
+    \+ is_list(Element).
+
 % Predicate to encode a message using the Huffman tree
 % encode_message/3 Chars SymbolBitsTable Bits
 encode_message([], _, []).
@@ -150,9 +160,9 @@ encode_message([Char|Rest], SymbolBitsTable, Bits) :-
 % Main predicate to encode a message using the Huffman tree
 % hucodec_encode/3 Message HuffmanTree Bits
 hucodec_encode(Message, HuffmanTree, Bits) :-
+    flatten_message(Message, FlatMessage),
     hucodec_generate_symbol_bits_table(HuffmanTree, SymbolBitsTable),
-    string_chars(Message, Chars),
-    encode_message(Chars, SymbolBitsTable, Bits).
+    encode_message(FlatMessage, SymbolBitsTable, Bits).
 
 % Predicate to decode bits into a message using the Huffman tree
 % decode_bits/4 Bits HuffmanTree CurrentNode Message
@@ -169,8 +179,14 @@ decode_bits([1|Bits], node(_, _, _, Right), HuffmanTree, Message) :-
 % Main predicate to decode bits into a message using the Huffman tree
 % hucodec_decode/3 Bits HuffmanTree Message
 hucodec_decode(Bits, HuffmanTree, Message) :-
-    decode_bits(Bits, HuffmanTree, HuffmanTree, CharList),
-    atom_chars(Message, CharList).
+    decode_bits(Bits, HuffmanTree, HuffmanTree, FlatMessage),
+    unflatten_message(FlatMessage, Message).
+
+% Helper predicate to unflatten a list into a nested list
+% unflatten_message/2 FlatList NestedList
+unflatten_message([], []).
+unflatten_message([Head|Tail], [Head|NestedTail]) :-
+    unflatten_message(Tail, NestedTail).
 
 % Predicate to encode the contents of a file using the Huffman tree
 % hucodec_encode_file/3 Filename HuffmanTree Bits
@@ -178,4 +194,5 @@ hucodec_encode_file(Filename, HuffmanTree, Bits) :-
     open(Filename, read, Stream),
     read_string(Stream, _, Content),
     close(Stream),
-    hucodec_encode(Content, HuffmanTree, Bits).
+    string_chars(Content, Chars),
+    hucodec_encode(Chars, HuffmanTree, Bits).
