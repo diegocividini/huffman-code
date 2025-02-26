@@ -37,8 +37,13 @@
 ;;; hucodec-encode-file filename huffman-tree -> bits (list of 0s and 1s)
 (defun hucodec-encode-file (filename huffman-tree)
   (with-open-file (stream filename)
-    (let ((content (read-line stream)))
-      (hucodec-encode (coerce content 'list) huffman-tree))))
+    (let ((content (read-line stream nil)))
+      (format t "File content: ~a~%" content)
+      (if content
+          (let ((char-list (coerce content 'list)))
+            (format t "Character list: ~a~%" char-list)
+            (hucodec-encode char-list huffman-tree))
+          nil))))
 
 ;;; hucodec-generate-huffman-tree symbols-n-weights (list of sw(symbol . weight)) -> huffman-tree
 (defun hucodec-generate-huffman-tree (symbols-n-weights)
