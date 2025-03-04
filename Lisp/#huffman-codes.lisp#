@@ -11,7 +11,8 @@
 
 
 (defun hucodec-generate-huffman-tree (symbols-n-weights)
-  (let ((queue (mapcar (lambda (sw) (list (cdr sw) (car sw))) symbols-n-weights)))
+  (let ((queue (mapcar (lambda (sw) (list (cdr sw) (car sw)))
+		       symbols-n-weights)))
     (loop while (> (length queue) 1) do
          (setf queue (sort queue #'< :key #'car))
          (let* ((left (pop queue))
@@ -89,7 +90,8 @@
       (hucodec-print-huffman-tree huffman-tree)
       
       ;; Generate symbol-bits table
-      (let ((symbol-bits-table (hucodec-generate-symbol-bits-table huffman-tree)))
+      (let ((symbol-bits-table
+	     (hucodec-generate-symbol-bits-table huffman-tree)))
         (format t "~%Symbol-Bits Table: ~a~%" symbol-bits-table)
         
         ;; Encode message
