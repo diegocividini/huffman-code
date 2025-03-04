@@ -9,6 +9,14 @@
 ;;; hucodec-generate-symbol-bits-table huffman-tree -> symbol-bits-table (list of (symbols . bits))
 ;;; hucodec-print-huffman-tree huffman-tree &optional (indent 0) -> NIL
 
+(defun flatten-list (lst)
+  "Flatten a nested list into a simple list."
+  (cond
+    ((null lst) nil)
+    ((listp (first lst))
+     (append (flatten-list (first lst)) (flatten-list (rest lst))))
+    (t (cons (first lst) (flatten-list (rest lst))))))
+
 (defun hucodec-generate-huffman-tree (symbols-n-weights)
   "Generate a Huffman tree from a list of (symbol . weight) pairs."
   (labels ((merge-nodes (queue)
@@ -41,7 +49,7 @@
                                               (char (symbol-name item) 0)
                                               item)))
                                 (cdr (assoc char symbol-bits-table))))
-                            message))))
+                            (flatten-list message)))))
 
 (defun hucodec-decode (bits huffman-tree)
   (let ((node huffman-tree)
@@ -87,7 +95,7 @@
 (defun run-test ()
   "Run a test with the input 'adde' and the list of symbol weights '((#\a . 1) (#\e . 1) (#\d . 2))'."
   (let ((symbols-n-weights '((#\a . 1) (#\e . 1) (#\d . 2) (#\Space . 1)))
-        (message '(#\a #\d #\d #\e)))
+        (message '((#\a #\a) (#\d #\d) #\e)))
     ;; Generate Huffman tree
     (let ((huffman-tree (hucodec-generate-huffman-tree symbols-n-weights)))
       ;; Print Huffman tree
