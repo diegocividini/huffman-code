@@ -11,14 +11,16 @@
 
 
 (defun hucodec-generate-huffman-tree (symbols-n-weights)
-  (let ((queue (mapcar (lambda (sw) (list (cdr sw) (car sw))) symbols-n-weights)))
-    (loop while (> (length queue) 1) do
-         (setf queue (sort queue #'< :key #'car))
-         (let* ((left (pop queue))
-                (right (pop queue))
-                (new-node (list (+ (car left) (car right)) left right)))
-           (push new-node queue)))
-    (first queue)))
+  "Generate a Huffman tree from a list of (symbol . weight) pairs."
+  (labels ((merge-nodes (queue)
+             (if (<= (length queue) 1)
+                 queue
+                 (let* ((sorted-queue (sort queue #'< :key #'car))
+                        (left (pop sorted-queue))
+                        (right (pop sorted-queue))
+                        (new-node (list (+ (car left) (car right)) left right)))
+                   (merge-nodes (cons new-node sorted-queue))))))
+    (first (merge-nodes (mapcar (lambda (sw) (list (cdr sw) (car sw))) symbols-n-weights)))))
 
 (defun hucodec-generate-symbol-bits-table (huffman-tree)
   (labels ((traverse (node prefix)
@@ -54,12 +56,10 @@
                          (collect-symbols (third node)))))
            (print-node (node indent)
              (if (symbolp (second node))
-                 (format t "~&~v@TNode: ~a, Weight: ~a"
-			 indent (second node) (car node))
+                 (format t "~&~v@TNode: ~a, Weight: ~a" indent (second node) (car node))
                  (progn
-                   (format t "~&~v@TNode: ~a, Weight: ~a"
-			   indent (collect-symbols node) (car node))
-		   (print-node (second node) (+ indent 2))
+                   (format t "~&~v@TNode: ~a, Weight: ~a" indent (collect-symbols node) (car node))
+                   (print-node (second node) (+ indent 2))
                    (print-node (third node) (+ indent 2))))))
     (print-node huffman-tree indent)))
 
@@ -70,18 +70,16 @@
         (cons (intern (string-upcase (string content)))
               (file-to-symbol-list stream)))))
 
-
 (defun hucodec-encode-file (filename huffman-tree)
-  (with-open-file (stream filename 
-                  :direction :input 
-                  :if-does-not-exist :error)
-  (let ((message (file-to-symbol-list stream)))
-    (format t "Message from file: ~a~%" message)
-    (hucodec-encode message huffman-tree))))
+  (with-open-file (stream filename :direction :input :if-does-not-exist :error)
+    (let ((message (file-to-symbol-list stream)))
+      (format t "Message from file: ~a~%" message)
+      (hucodec-encode message huffman-tree))))
 
 (defun run-test ()
-  (let ((symbols-n-weights '((a . 1) (e . 1) (d . 2)))
-        (message '(a d d e)))
+  "Run a test with the input 'adde' and the list of symbol weights '((a . 1) (e . 1) (d . 2))'."
+  (let ((symbols-n-weights '(("a" . 1) ("e" . 1) ("d" . 2)))
+        (message '("a" "d" "d" "e")))
     ;; Generate Huffman tree
     (let ((huffman-tree (hucodec-generate-huffman-tree symbols-n-weights)))
       ;; Print Huffman tree
