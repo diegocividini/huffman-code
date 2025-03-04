@@ -1,3 +1,4 @@
+% -*- Mode: Prolog -*-
 % Carbutti Lucia, Cividini Diego
 
 %% hucodec_decode/3 Bits HuffmanTree Message
@@ -95,7 +96,7 @@ build_huffman_tree([Node1, Node2|Rest], HuffmanTree) :-
     insert_node_sorted(CombinedNode, Rest, NewNodes),
     build_huffman_tree(NewNodes, HuffmanTree).
 
-% Main predicate to generate the Huffman tree from a list of symbols and weights
+% Main predicate to generate the Huffman tree from list of symbols and weights
 % hucodec_generate_huffman_tree/2 SymbolsAndWeights HuffmanTree
 hucodec_generate_huffman_tree(SortedSymbolsAndWeights, HuffmanTree) :-
     create_leaf_nodes(SortedSymbolsAndWeights, LeafNodes),
@@ -113,6 +114,8 @@ traverse_huffman_tree(node(_, _, Left, Right), Bits, SymbolBitsTable) :-
 
 % Predicate to generate the symbol bits table from the Huffman tree
 % hucodec_generate_symbol_bits_table/2 HuffmanTree SymbolBitsTable
+hucodec_generate_symbol_bits_table(node([Symbol], _, nil, nil),
+				   [sb(Symbol, [0])]) :- !.
 hucodec_generate_symbol_bits_table(HuffmanTree, SymbolBitsTable) :-
     traverse_huffman_tree(HuffmanTree, [], SymbolBitsTable).
 
