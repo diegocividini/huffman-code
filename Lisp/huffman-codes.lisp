@@ -9,6 +9,13 @@
 ;;; hucodec-generate-symbol-bits-table huffman-tree -> symbol-bits-table
 ;;; hucodec-print-huffman-tree huffman-tree &optional (indent 0) -> NIL
 
+;; Define Huffman Tree structure
+(defstruct huffman-node
+  weight
+  symbol
+  left
+  right)
+
 (defun flatten-list (lst)
   (cond
     ((null lst) nil)
@@ -20,24 +27,32 @@
   (labels ((merge-nodes (queue)
              (if (<= (length queue) 1)
                  queue
-                 (let* ((sorted-queue (sort queue #'< :key #'car))
+                 (let* ((sorted-queue
+			 (sort queue #'< :key #'huffman-node-weight))
                         (left (pop sorted-queue))
                         (right (pop sorted-queue))
-                        (new-node (list (+ (car left) (car right)) left right)))
+                        (new-node (make-huffman-node
+                                   :weight (+ (huffman-node-weight left)
+					      (huffman-node-weight right))
+                                   :left left
+                                   :right right)))
                    (merge-nodes (cons new-node sorted-queue))))))
     (first (merge-nodes (mapcar (lambda (sw)
-				  (list (cdr sw)
-                                        (if (symbolp (car sw))
-                                            (char (symbol-name (car sw)) 0)
-                                            (car sw))))
+                                  (make-huffman-node
+                                   :weight (cdr sw)
+                                   :symbol (if (symbolp (car sw))
+                                               (char (symbol-name (car sw)) 0)
+                                               (car sw))))
                                 symbols-n-weights)))))
 
 (defun hucodec-generate-symbol-bits-table (huffman-tree)
   (labels ((traverse (node prefix)
-             (if (characterp (second node))
-                 (list (cons (second node) prefix))
-                 (append (traverse (second node) (append prefix '(0)))
-                         (traverse (third node) (append prefix '(1)))))))
+             (if (huffman-node-symbol node)
+                 (list (cons (huffman-node-symbol node) prefix))
+                 (append (traverse (huffman-node-left node)
+				   (append prefix '(0)))
+                         (traverse (huffman-node-right node)
+				   (append prefix '(1)))))))
     (traverse huffman-tree '())))
 
 (defun hucodec-encode (message huffman-tree)
@@ -54,29 +69,33 @@
         (message '()))
     (dolist (bit bits)
       (setf node (if (zerop bit)
-                     (second node)
-                     (third node)))
-      (when (characterp (second node))
-        (push (second node) message)
+                     (huffman-node-left node)
+                     (huffman-node-right node)))
+      (when (huffman-node-symbol node)
+        (push (huffman-node-symbol node) message)
         (setf node huffman-tree)))
     (nreverse message)))
 
+(defun collect-symbols (node)
+  (if (huffman-node-symbol node)
+      (list (huffman-node-symbol node))
+      (append (collect-symbols (huffman-node-left node))
+              (collect-symbols (huffman-node-right node)))))
+
+(defun print-node (node indent prefix)
+  (if (huffman-node-symbol node)
+      (format t "~&~v@T~a Node: ~a, Weight: ~a"
+              indent prefix (huffman-node-symbol node)
+	      (huffman-node-weight node))
+      (progn
+        (format t "~&~v@T~a Node: ~a, Weight: ~a"
+                indent prefix (collect-symbols node) (huffman-node-weight node))
+        (print-node (huffman-node-left node) (+ indent 2) "L: ")
+        (print-node (huffman-node-right node) (+ indent 2) "R: "))))
+
 (defun hucodec-print-huffman-tree (huffman-tree &optional (indent 0))
-  (labels ((collect-symbols (node)
-             (if (characterp (second node))
-                 (list (second node))
-                 (append (collect-symbols (second node))
-                         (collect-symbols (third node)))))
-           (print-node (node indent)
-             (if (characterp (second node))
-                 (format t "~&~v@TNode: ~a, Weight: ~a"
-			 indent (second node) (car node))
-                 (progn
-                   (format t "~&~v@TNode: ~a, Weight: ~a"
-			   indent (collect-symbols node) (car node))
-                   (print-node (second node) (+ indent 2))
-                   (print-node (third node) (+ indent 2))))))
-    (print-node huffman-tree indent)))
+  (print-node huffman-tree indent "Root: "))
+
 
 (defun file-to-char-list (stream)
   (let ((char (read-char stream nil :end-of-file)))
@@ -86,8 +105,8 @@
 
 (defun hucodec-encode-file (filename huffman-tree)
   (with-open-file (stream filename
-			  :direction :input
-			  :if-does-not-exist :error)
+                          :direction :input
+                          :if-does-not-exist :error)
     (let ((message (file-to-char-list stream)))
       (format t "Message from file: ~a~%" message)
       (hucodec-encode message huffman-tree))))
