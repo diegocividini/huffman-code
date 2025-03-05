@@ -1,12 +1,7 @@
 % -*- Mode: Prolog -*-
 % Carbutti Lucia, Cividini Diego
 
-%% hucodec_decode/3 Bits HuffmanTree Message
-%% hucodec_encode/3 Message HuffmanTree Bits
-%% hucodec_encode_file/3 Filename HuffmanTree Bits
-%% hucodec_generate_huffman_tree/2 SymbolsAndWeights HuffmanTree 
-%% hucodec_generate_symbol_bits_table/2 HuffmanTree SymbolBitsTable
-%% hucodec_print_huffman_tree/1 HuffmanTree
+% huffman-codes.pl starts here
 
 % Helper predicate to count occurrences of a character in a list
 % count_occurrences/3 Char List Count
@@ -199,3 +194,5 @@ hucodec_encode_file(Filename, HuffmanTree, Bits) :-
     close(Stream),
     string_chars(Content, Chars),
     hucodec_encode(Chars, HuffmanTree, Bits).
+
+% huffman-codes.pl starts here

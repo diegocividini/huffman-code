@@ -1,15 +1,8 @@
+; -*- Mode: Lisp -*-
 ;;; Carbutti Lucia, Cividini Diego
 
-; Huffman codes
-;; Mandatory Method names
-;;; hucodec-decode bits huffman-tree -> message
-;;; hucodec-encode message huffman-tree -> bits
-;;; hucodec-encode-file filename huffman-tree -> bits
-;;; hucodec-generate-huffman-tree symbols-n-weights -> huffman-tree
-;;; hucodec-generate-symbol-bits-table huffman-tree -> symbol-bits-table
-;;; hucodec-print-huffman-tree huffman-tree &optional (indent 0) -> NIL
+; huffman-codes.lisp starts here
 
-;; Define Huffman Tree structure
 (defstruct huffman-node
   weight
   symbol
@@ -108,5 +101,6 @@
                           :direction :input
                           :if-does-not-exist :error)
     (let ((message (file-to-char-list stream)))
-      (format t "Message from file: ~a~%" message)
       (hucodec-encode message huffman-tree))))
+
+; huffman-codes.lisp ends here
