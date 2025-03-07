@@ -30,13 +30,15 @@
         (merge-nodes (cons new-node sorted-queue)))))
 
 (defun hucodec-generate-huffman-tree (symbols-n-weights)
-  (first (merge-nodes (mapcar (lambda (sw)
-                                (make-huffman-node
-                                 :weight (cdr sw)
-                                 :symbol (if (symbolp (car sw))
-                                             (char (symbol-name (car sw)) 0)
-                                             (car sw))))
-			      symbols-n-weights))))
+  (if (null symbols-n-weights)
+      (error "Cannot generate Huffman tree from an empty list")
+      (first (merge-nodes (mapcar (lambda (sw)
+                                    (make-huffman-node
+                                     :weight (cdr sw)
+                                     :symbol (if (symbolp (car sw))
+                                                 (char (symbol-name (car sw)) 0)
+                                                 (car sw))))
+                                  symbols-n-weights)))))
 
 (defun traverse (node prefix)
   (if (huffman-node-symbol node)
