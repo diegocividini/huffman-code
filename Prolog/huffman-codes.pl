@@ -17,7 +17,7 @@ count_occurrences(Char, [OtherChar|Rest], Count) :-
 % generate_symbols_and_weights/3 Chars Seen SymbolsAndWeights
 generate_symbols_and_weights([], _, []).
 generate_symbols_and_weights([Char|Chars], Seen,
-			     [sw(Char, Count)|SymbolsAndWeights]) :-
+                 [sw(Char, Count)|SymbolsAndWeights]) :-
     \+ member(Char, Seen),
     count_occurrences(Char, [Char|Chars], Count),
     generate_symbols_and_weights(Chars, [Char|Seen], SymbolsAndWeights).
@@ -29,10 +29,10 @@ generate_symbols_and_weights([Char|Chars], Seen, SymbolsAndWeights) :-
 % insert_sorted/3 Element List SortedList
 insert_sorted(sw(Char, Count), [], [sw(Char, Count)]).
 insert_sorted(sw(Char, Count), [sw(Char1, Count1)|Rest],
-	      [sw(Char, Count), sw(Char1, Count1)|Rest]) :-
+          [sw(Char, Count), sw(Char1, Count1)|Rest]) :-
     Count =< Count1.
 insert_sorted(sw(Char, Count), [sw(Char1, Count1)|Rest],
-	      [sw(Char1, Count1)|SortedRest]) :-
+          [sw(Char1, Count1)|SortedRest]) :-
     Count > Count1,
     insert_sorted(sw(Char, Count), Rest, SortedRest).
 
@@ -54,15 +54,15 @@ generate_symbols_and_weights_list(Text, SortedSymbolsAndWeights) :-
 % create_leaf_nodes/2 SymbolsAndWeights LeafNodes
 create_leaf_nodes([], []).
 create_leaf_nodes([sw(Char, Count)|Rest],
-		  [node([Char], Count, nil, nil)|LeafNodes]) :-
+          [node([Char], Count, nil, nil)|LeafNodes]) :-
     create_leaf_nodes(Rest, LeafNodes).
 
 % Predicate to combine two nodes
 % combine_nodes/3 Node1 Node2 CombinedNode
 combine_nodes(node(Symbols1, Weight1, Left1, Right1),
-	      node(Symbols2, Weight2, Left2, Right2),
-	      node(Symbols, Weight, node(Symbols1, Weight1, Left1, Right1),
-		   node(Symbols2, Weight2, Left2, Right2))) :-
+          node(Symbols2, Weight2, Left2, Right2),
+          node(Symbols, Weight, node(Symbols1, Weight1, Left1, Right1),
+           node(Symbols2, Weight2, Left2, Right2))) :-
     append(Symbols1, Symbols2, Symbols),
     Weight is Weight1 + Weight2.
 
@@ -83,12 +83,28 @@ insert_node_sorted(Node, [Node1|Rest], [Node1|SortedRest]) :-
     Weight > Weight1,
     insert_node_sorted(Node, Rest, SortedRest).
 
+% Predicate to find the node with the smallest weight
+% find_min_node/3 Nodes MinNode RestNodes
+find_min_node([Node], Node, []).
+find_min_node([Node1, Node2|Rest], MinNode, [Node2|RestNodes]) :-
+    node_weight(Node1, Weight1),
+    node_weight(Node2, Weight2),
+    Weight1 =< Weight2,
+    find_min_node([Node1|Rest], MinNode, RestNodes).
+find_min_node([Node1, Node2|Rest], MinNode, [Node1|RestNodes]) :-
+    node_weight(Node1, Weight1),
+    node_weight(Node2, Weight2),
+    Weight1 > Weight2,
+    find_min_node([Node2|Rest], MinNode, RestNodes).
+
 % Predicate to build the Huffman tree from a list of nodes
 % build_huffman_tree/2 Nodes HuffmanTree
 build_huffman_tree([Node], Node).
-build_huffman_tree([Node1, Node2|Rest], HuffmanTree) :-
-    combine_nodes(Node1, Node2, CombinedNode),
-    insert_node_sorted(CombinedNode, Rest, NewNodes),
+build_huffman_tree(Nodes, HuffmanTree) :-
+    find_min_node(Nodes, MinNode1, RestNodes1),
+    find_min_node(RestNodes1, MinNode2, RestNodes2),
+    combine_nodes(MinNode1, MinNode2, CombinedNode),
+    insert_node_sorted(CombinedNode, RestNodes2, NewNodes),
     build_huffman_tree(NewNodes, HuffmanTree).
 
 % Main predicate to generate the Huffman tree from list of symbols and weights
@@ -110,7 +126,7 @@ traverse_huffman_tree(node(_, _, Left, Right), Bits, SymbolBitsTable) :-
 % Predicate to generate the symbol bits table from the Huffman tree
 % hucodec_generate_symbol_bits_table/2 HuffmanTree SymbolBitsTable
 hucodec_generate_symbol_bits_table(node([Symbol], _, nil, nil),
-				   [sb(Symbol, [0])]) :- !.
+                   [sb(Symbol, [0])]) :- !.
 hucodec_generate_symbol_bits_table(HuffmanTree, SymbolBitsTable) :-
     traverse_huffman_tree(HuffmanTree, [], SymbolBitsTable).
 
@@ -167,7 +183,7 @@ hucodec_encode(Message, HuffmanTree, Bits) :-
 decode_bits([], node([Symbol], _, nil, nil), _, [Symbol]).
 decode_bits([], _, _, []).
 decode_bits([Bit|Bits], node([Symbol], _, nil, nil),
-	    HuffmanTree, [Symbol|RestMessage]) :-
+        HuffmanTree, [Symbol|RestMessage]) :-
     decode_bits([Bit|Bits], HuffmanTree, HuffmanTree, RestMessage).
 decode_bits([0|Bits], node(_, _, Left, _), HuffmanTree, Message) :-
     decode_bits(Bits, Left, HuffmanTree, Message).
@@ -195,4 +211,4 @@ hucodec_encode_file(Filename, HuffmanTree, Bits) :-
     string_chars(Content, Chars),
     hucodec_encode(Chars, HuffmanTree, Bits).
 
-% huffman-codes.pl starts here
+% huffman-codes.pl ends here
