@@ -36,7 +36,7 @@
                                  :symbol (if (symbolp (car sw))
                                              (char (symbol-name (car sw)) 0)
                                              (car sw))))
-                              symbols-n-weights))))
+			      symbols-n-weights))))
 
 (defun traverse (node prefix)
   (if (huffman-node-symbol node)
@@ -62,10 +62,12 @@
                               (let* ((char (if (symbolp item)
                                                (char (symbol-name item) 0)
                                                item))
-                                     (bits (cdr (assoc char symbol-bits-table))))
+                                     (bits (cdr
+					    (assoc char symbol-bits-table))))
                                 (if bits
                                     bits
-                                    (error "Symbol ~a not found in the symbol-bits-table" char))))
+                                    (error
+				     "Symbol ~a not found in list" char))))
                             (flatten-list message)))))
 
 (defun validate-bits (bits)
@@ -82,15 +84,22 @@
                            (huffman-node-left node)
                            (huffman-node-right node))))
         (if (and next-node (huffman-node-symbol next-node))
-            (decode-bits (rest bits) huffman-tree (cons (huffman-node-symbol next-node) message) huffman-tree)
-            (decode-bits (rest bits) next-node message huffman-tree)))))
+            (decode-bits (rest bits)
+			 huffman-tree
+			 (cons (huffman-node-symbol next-node) message)
+			 huffman-tree)
+            (decode-bits (rest bits)
+			 next-node
+			 message
+			 huffman-tree)))))
 
 (defun hucodec-decode (bits huffman-tree)
   (validate-bits bits)
   (if (and (null (huffman-node-left huffman-tree))
            (null (huffman-node-right huffman-tree)))
       (if (every #'zerop bits)
-          (make-list (length bits) :initial-element (huffman-node-symbol huffman-tree))
+          (make-list (length bits)
+		     :initial-element (huffman-node-symbol huffman-tree))
           (error "Invalid bit sequence for single-node Huffman tree"))
       (decode-bits bits huffman-tree '() huffman-tree)))
 
