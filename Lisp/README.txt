@@ -5,6 +5,7 @@ Il progetto Huffman Codes implementa la codifica di Huffman in Common Lisp
 Note di implementazione:
 Il progetto è stato implementato in Common Lisp, il file huffman-codes.lisp contiene tutte le funzioni necessarie per la codifica e decodifica di un messaggio utilizzando l'algoritmo di Huffman.
 Il metodo di encoding accetta una lista (composta anche da sottoliste) di simboli (che per comportamento nativo di Lisp verranno automaticamente convertiti nel loro corrispettivo in maiuscolo (es. 'a' -> 'A')) o di caratteri (es. #\a) e restituisce l'encoding in una lista di bit.
+Si noti che una volta scelto il tipo di simboli inseriti nell'albero, bisogna attenersi alla formattazione utilizzata (case sensitive o case insensitive) per evitare che Lisp ritorni un errore.
 Il metodo accetta sia una logica case sensitive (in quel caso optare per un messaggio in una lista di caratteri) e sia una logica case insensitive (in quel caso optare per un messaggio in una lista di simboli).
 
 Il metodo di decoding accetta una lista di bit (verificandoc che sia composta da cifre binarie) e un albero di Huffman e restituisce il messaggio sottoforma di lista di caratteri.

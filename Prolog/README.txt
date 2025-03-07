@@ -4,6 +4,7 @@ Il progetto Huffman Codes implementa la codifica di Huffman in Prolog
 
 Note di implementazione:
 Il progetto è stato implementato in Prolog, il file huffman_codes.pl contiene tutte le funzioni necessarie per la codifica e decodifica di un messaggio utilizzando l'algoritmo di Huffman.
+Si noti che la codifica dei caratteri è case-sensitive. Quando si codifica un messaggio con simboli non presenti nell'albero, Prolog ritorna false.
 Il metodo di encoding accetta una lista (composta anche da sottoliste) di caratteri e restituisce l'encoding in una lista di bit.
 
 Il metodo di decoding accetta una lista di bit e un albero di Huffman e restituisce il messaggio sottoforma di lista di caratteri.
