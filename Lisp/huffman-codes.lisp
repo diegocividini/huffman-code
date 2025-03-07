@@ -50,12 +50,6 @@
       (list (cons (huffman-node-symbol huffman-tree) '(0)))
       (traverse huffman-tree '())))
 
-(defun is-in (l list)
-  (if (and (listp list) (not (null list)))
-      (if (equal l (first list))
-          T
-          (is-in l (rest list)))))
-
 (defun hucodec-encode (message huffman-tree)
   (let ((symbol-bits-table (hucodec-generate-symbol-bits-table huffman-tree)))
     (apply #'append (mapcar (lambda (item)
