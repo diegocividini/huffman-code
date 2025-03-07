@@ -1,8 +1,8 @@
-# Huffman Codes
+Carbutti Lucia, Cividini Diego - Huffman Codes
 
 Il progetto Huffman Codes implementa la codifica di Huffman in Prolog
 
-## Note di implementazione:
+Note di implementazione:
 Il progetto è stato implementato in Prolog, il file huffman_codes.pl contiene tutte le funzioni necessarie per la codifica e decodifica di un messaggio utilizzando l'algoritmo di Huffman.
 Il metodo di encoding accetta una lista (composta anche da sottoliste) di caratteri e restituisce l'encoding in una lista di bit.
 
@@ -10,8 +10,8 @@ Il metodo di decoding accetta una lista di bit e un albero di Huffman e restitui
 
 L'albero di Huffman deve necessariamente contenere tutti i simboli da codificare/decodificare, altrimenti il predicato restituirà false.
 
-## Metodi implementati:
-### Metodi obbligatori da specifica (nome_metodo parametri):
+Metodi implementati:
+Metodi obbligatori da specifica (nome_metodo parametri):
 hucodec_decode/3                          Bits, HuffmanTree, Message
 hucodec_encode/3                          Message, HuffmanTree, Bits
 hucodec_encode_file/3                     Filename, HuffmanTree, Bits
@@ -19,7 +19,7 @@ hucodec_generate_huffman_tree/2           SymbolsAndWeights, HuffmanTree
 hucodec_generate_symbol_bits_table/2      HuffmanTree, SymbolBitsTable
 hucodec_print_huffman_tree/1              HuffmanTree
 
-### Ulteriori Metodi implementati (nome_metodo parametri):
+Ulteriori metodi implementati (nome_metodo parametri):
 count_occurrences/3                       Char, List, Count
     Conta le occorrenze di un carattere in una lista
 generate_symbols_and_weights/3            Chars, Seen, SymbolsAndWeights

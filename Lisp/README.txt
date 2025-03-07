@@ -1,8 +1,8 @@
-# Huffman Codes
+Carbutti Lucia, Cividini Diego - Huffman Codes
 
 Il progetto Huffman Codes implementa la codifica di Huffman in Common Lisp
 
-## Note di implementazione:
+Note di implementazione:
 Il progetto è stato implementato in Common Lisp, il file huffman-codes.lisp contiene tutte le funzioni necessarie per la codifica e decodifica di un messaggio utilizzando l'algoritmo di Huffman.
 Il metodo di encoding accetta una lista (composta anche da sottoliste) di simboli (che per comportamento nativo di Lisp verranno automaticamente convertiti nel loro corrispettivo in maiuscolo (es. 'a' -> 'A')) o di caratteri (es. #\a) e restituisce l'encoding in una lista di bit.
 Il metodo accetta sia una logica case sensitive (in quel caso optare per un messaggio in una lista di caratteri) e sia una logica case insensitive (in quel caso optare per un messaggio in una lista di simboli).
@@ -11,8 +11,8 @@ Il metodo di decoding accetta una lista di bit (verificandoc che sia composta da
 
 L'albero di Huffman deve necessariamente contenere tutti i simboli da codificare/decodificare, altrimenti verrà generato un errore.
 
-## Metodi implementati:
-### Metodi obbligatori da specifica (nome_metodo parametri output): 
+Metodi implementati:
+Metodi obbligatori da specifica (nome_metodo parametri output): 
 hucodec-decode                      bits huffman-tree                     -> message
 hucodec-encode                      message huffman-tree                  -> bits
 hucodec-encode-file                 filename huffman-tree                 -> bits
@@ -20,7 +20,7 @@ hucodec-generate-huffman-tree       symbols-n-weights                     -> huf
 hucodec-generate-symbol-bits-table  huffman-tree                          -> symbol-bits-table
 hucodec-print-huffman-tree          huffman-tree &optional (indent 0)     -> NIL
 
-### Ulteriori Metodi implementati (nome_metodo parametri output):
+Ulteriori metodi implementati (nome_metodo parametri output):
 flatten-list                        lst                                   -> lst
     Il metodo flatten-list prende in input una lista di liste e restituisce una lista con tutti gli elementi delle liste di input
 merge-nodes                         queue                                 -> lst
